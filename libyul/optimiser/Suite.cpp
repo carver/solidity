@@ -39,6 +39,7 @@
 #include <libyul/optimiser/SSATransform.h>
 #include <libyul/optimiser/StructuralSimplifier.h>
 #include <libyul/optimiser/RedundantAssignEliminator.h>
+#include <libyul/CompilabilityChecker.h>
 #include <libyul/AsmAnalysisInfo.h>
 #include <libyul/AsmData.h>
 #include <libyul/AsmPrinter.h>
@@ -139,5 +140,10 @@ void OptimiserSuite::run(
 	Rematerialiser::run(*_dialect, ast);
 	UnusedPruner::runUntilStabilised(*_dialect, ast, reservedIdentifiers);
 
-	_ast = std::move(ast);
+	if (CompilabilityChecker::run(_dialect, ast).empty())
+		_ast = std::move(ast);
+	else
+	{
+		cout << "Cannot compile!" << endl;
+	}
 }
