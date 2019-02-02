@@ -65,25 +65,32 @@ vector<dev::solidity::test::FunctionCall> TestFileParser::parseFunctionCalls()
 			{
 				FunctionCall call;
 
-				expect(SoltToken::Newline);
-				call.signature = parseFunctionSignature();
+				/// If this is not the first call in the test,
+				/// the last call to parseParameter could have eaten the
+				/// new line already. This could only be fixed with a one
+				/// token lookahead that checks parseParameter
+				/// if the next token is an identifier.
+				if (calls.empty())
+					expect(SoltToken::Newline);
+				else
+					accept(SoltToken::Newline, true);
 
+				call.signature = parseFunctionSignature();
 				if (accept(SoltToken::Comma, true))
 					call.value = parseFunctionCallValue();
 				if (accept(SoltToken::Colon, true))
 					call.arguments = parseFunctionCallArguments();
 
-				call.displayMode = parseNewline();
+				if (accept(SoltToken::Newline, true))
+					call.displayMode = FunctionCall::DisplayMode::MultiLine;
+
 				call.arguments.comment = parseComment();
 
 				if (accept(SoltToken::Newline, true))
 					call.displayMode = FunctionCall::DisplayMode::MultiLine;
+
 				expect(SoltToken::Arrow);
-
 				call.expectations = parseFunctionCallExpectations();
-
-				if (accept(SoltToken::Newline, false))
-					call.displayMode = parseNewline();
 				call.expectations.comment = parseComment();
 
 				calls.emplace_back(std::move(call));
@@ -121,12 +128,12 @@ bool TestFileParser::accept(SoltToken _token, bool const _expect)
 bool TestFileParser::expect(SoltToken _token, bool const _advance)
 {
 	if (m_scanner.currentToken() != _token)
-		throw Error
-			(Error::Type::ParserError,
-					"Unexpected " + formatToken(m_scanner.currentToken()) + ": \"" +
-					m_scanner.currentLiteral() + "\". " +
-					"Expected \"" + formatToken(_token) + "\"."
-					);
+		throw Error(
+			Error::Type::ParserError,
+			"Unexpected " + formatToken(m_scanner.currentToken()) + ": \"" +
+			m_scanner.currentLiteral() + "\". " +
+			"Expected \"" + formatToken(_token) + "\"."
+			);
 	if (_advance)
 		m_scanner.scanNextToken();
 	return true;
@@ -184,7 +191,10 @@ FunctionCallExpectations TestFileParser::parseFunctionCallExpectations()
 
 	auto param = parseParameter();
 	if (param.abiType.type == ABIType::None)
+	{
+		expectations.failure = false;
 		return expectations;
+	}
 	expectations.parameters.emplace_back(param);
 
 	while (accept(SoltToken::Comma, true))
@@ -227,7 +237,7 @@ pair<bytes, ABIType> TestFileParser::parseABITypeLiteral()
 				abiType = ABIType{ABIType::UnsignedDec, 32};
 				number = convertNumber(parseNumber());
 			}
-			if (accept(SoltToken::Failure, true))
+			else if (accept(SoltToken::Failure, true))
 			{
 				abiType = ABIType{ABIType::Failure, 0};
 				return make_pair(bytes{}, abiType);
@@ -239,13 +249,6 @@ pair<bytes, ABIType> TestFileParser::parseABITypeLiteral()
 	{
 		throw Error(Error::Type::ParserError, "Number encoding invalid.");
 	}
-}
-
-solidity::test::FunctionCall::DisplayMode TestFileParser::parseNewline()
-{
-	if (accept(SoltToken::Newline, true))
-		return FunctionCall::DisplayMode::MultiLine;
-	return FunctionCall::DisplayMode::SingleLine;
 }
 
 string TestFileParser::parseComment()
@@ -348,8 +351,6 @@ void TestFileParser::Scanner::scanNextToken()
 		}
 	}
 	while (token.first == SoltToken::Whitespace);
-
-	m_nextToken = token;
 	m_currentToken = token;
 }
 

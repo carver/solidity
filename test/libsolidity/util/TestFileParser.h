@@ -257,8 +257,6 @@ private:
 		void scanNextToken();
 
 		SoltToken currentToken() { return m_currentToken.first; }
-		SoltToken peekToken() { return m_nextToken.first; }
-
 		std::string currentLiteral() { return m_currentToken.second; }
 
 		std::string scanComment();
@@ -283,7 +281,6 @@ private:
 		std::string m_currentLiteral;
 
 		TokenDesc m_currentToken;
-		TokenDesc m_nextToken;
 	};
 
 	bool accept(SoltToken _token, bool const _expect = false);
@@ -320,10 +317,6 @@ private:
 	/// to detect empty expectations. Throws a ParserError if data is encoded incorrectly or
 	/// if data type is not supported.
 	std::pair<bytes, ABIType> parseABITypeLiteral();
-
-	/// Accepts a newline `//` and returns DisplayMode::MultiLine
-	/// if found, DisplayMode::SingleLine otherwise.
-	FunctionCall::DisplayMode parseNewline();
 
 	/// Parses a comment
 	std::string parseComment();
