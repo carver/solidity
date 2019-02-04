@@ -35,9 +35,13 @@ void Rematerialiser::run(Dialect const& _dialect, Block& _ast)
 	Rematerialiser{_dialect, _ast}(_ast);
 }
 
-void Rematerialiser::run(Dialect const& _dialect, FunctionDefinition& _function)
+void Rematerialiser::run(
+	Dialect const& _dialect,
+	FunctionDefinition& _function,
+	set<YulString> _varsToAlwaysRematerialize
+)
 {
-	Rematerialiser{_dialect, _function}(_function);
+	Rematerialiser{_dialect, _function, std::move(_varsToAlwaysRematerialize)}(_function);
 }
 
 Rematerialiser::Rematerialiser(Dialect const& _dialect, Block& _ast):
@@ -46,9 +50,14 @@ Rematerialiser::Rematerialiser(Dialect const& _dialect, Block& _ast):
 {
 }
 
-Rematerialiser::Rematerialiser(Dialect const& _dialect, FunctionDefinition& _function):
+Rematerialiser::Rematerialiser(
+	Dialect const& _dialect,
+	FunctionDefinition& _function,
+	set<YulString> _varsToAlwaysRematerialize
+):
 	DataFlowAnalyzer(_dialect),
-	m_referenceCounts(ReferencesCounter::countReferences(_function))
+	m_referenceCounts(ReferencesCounter::countReferences(_function)),
+	m_varsToAlwaysRematerialize(std::move(_varsToAlwaysRematerialize))
 {
 }
 
@@ -64,7 +73,7 @@ void Rematerialiser::visit(Expression& _e)
 			auto const& value = *m_value.at(name);
 			size_t refs = m_referenceCounts[name];
 			size_t cost = CodeCost::codeCost(value);
-			if (refs <= 1 || cost == 0 || (refs <= 5 && cost <= 1))
+			if (refs <= 1 || cost == 0 || (refs <= 5 && cost <= 1) || m_varsToAlwaysRematerialize.count(name))
 			{
 				assertThrow(m_referenceCounts[name] > 0, OptimizerException, "");
 				for (auto const& ref: m_references[name])
