@@ -120,7 +120,8 @@ but it is packed tightly in calldata and memory. ``string`` is equal to ``bytes`
 length or index access.
 
 While Solidity does not have string manipulation functions, you can use
-this array equivalence for similar functionality. For example to compare
+third-party string libraries. Furthermore, you can compare two strings by their keccak256-hash using
+``keccak256(abi.encodePacked(s1)) == keccak256(abi.encodePacked(s2))`` and concatenate two strings using ``abi.encodePacked(s1, s2)``.
 two strings ``keccak256(abi.encode(s1)) == keccak256(abi.encode(s2))``, or to
 concatenate two strings already encoded with ``abi.encodePacked(s1, s2);``.
 
