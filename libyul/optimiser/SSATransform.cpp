@@ -133,3 +133,10 @@ void SSATransform::run(Block& _ast, NameDispenser& _nameDispenser)
 	SSATransform{_nameDispenser, assignments.names()}(_ast);
 }
 
+void SSATransform::run(FunctionDefinition& _function, NameDispenser& _nameDispenser)
+{
+	Assignments assignments;
+	assignments(_function);
+	SSATransform{_nameDispenser, assignments.names()}(_function);
+}
+

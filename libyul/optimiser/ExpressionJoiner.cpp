@@ -84,9 +84,19 @@ void ExpressionJoiner::run(Block& _ast)
 	ExpressionJoiner{_ast}(_ast);
 }
 
+void ExpressionJoiner::run(FunctionDefinition& _function)
+{
+	ExpressionJoiner{_function}(_function);
+}
+
 ExpressionJoiner::ExpressionJoiner(Block& _ast)
 {
 	m_references = ReferencesCounter::countReferences(_ast);
+}
+
+ExpressionJoiner::ExpressionJoiner(FunctionDefinition& _function)
+{
+	m_references = ReferencesCounter::countReferences(_function);
 }
 
 void ExpressionJoiner::handleArguments(vector<Expression>& _arguments)

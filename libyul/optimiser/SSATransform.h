@@ -75,11 +75,13 @@ class NameDispenser;
 class SSATransform: public ASTModifier
 {
 public:
+	using ASTModifier::operator();
 	void operator()(Identifier&) override;
 	void operator()(ForLoop&) override;
 	void operator()(Block& _block) override;
 
 	static void run(Block& _ast, NameDispenser& _nameDispenser);
+	static void run(FunctionDefinition& _function, NameDispenser& _nameDispenser);
 
 private:
 	explicit SSATransform(NameDispenser& _nameDispenser, std::set<YulString> const& _variablesToReplace):

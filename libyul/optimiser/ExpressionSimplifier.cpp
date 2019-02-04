@@ -57,3 +57,10 @@ void ExpressionSimplifier::run(Dialect const& _dialect, Block& _ast)
 	ssaValues(_ast);
 	ExpressionSimplifier{_dialect, ssaValues.values()}(_ast);
 }
+
+void ExpressionSimplifier::run(Dialect const& _dialect, FunctionDefinition& _function)
+{
+	SSAValueTracker ssaValues;
+	ssaValues(_function);
+	ExpressionSimplifier{_dialect, ssaValues.values()}(_function);
+}

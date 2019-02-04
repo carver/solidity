@@ -30,6 +30,13 @@ void SSAReverser::run(Block& _block)
 	SSAReverser{assignmentCounter}(_block);
 }
 
+void SSAReverser::run(FunctionDefinition& _function)
+{
+	AssignmentCounter assignmentCounter;
+	assignmentCounter(_function);
+	SSAReverser{assignmentCounter}(_function);
+}
+
 void SSAReverser::operator()(Block& _block)
 {
 	walkVector(_block.statements);

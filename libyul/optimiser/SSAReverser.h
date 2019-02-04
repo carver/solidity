@@ -66,6 +66,7 @@ public:
 	void operator()(Block& _block) override;
 
 	static void run(Block& _block);
+	static void run(FunctionDefinition& _function);
 private:
 	SSAReverser(AssignmentCounter const& _assignmentCounter): m_assignmentCounter(_assignmentCounter) {}
 	AssignmentCounter const& m_assignmentCounter;

@@ -42,6 +42,7 @@ public:
 	virtual void visit(Expression& _expression);
 
 	static void run(Dialect const& _dialect, Block& _ast);
+	static void run(Dialect const& _dialect, FunctionDefinition& _funtion);
 private:
 	explicit ExpressionSimplifier(Dialect const& _dialect, std::map<YulString, Expression const*> _ssaValues):
 		m_dialect(_dialect), m_ssaValues(std::move(_ssaValues))

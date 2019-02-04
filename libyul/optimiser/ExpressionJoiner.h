@@ -71,10 +71,13 @@ class ExpressionJoiner: public ASTModifier
 {
 public:
 	static void run(Block& _ast);
+	static void run(FunctionDefinition& _function);
 
 private:
 	explicit ExpressionJoiner(Block& _ast);
+	explicit ExpressionJoiner(FunctionDefinition& _function);
 
+	using ASTModifier::operator();
 	void operator()(Block& _block) override;
 	void operator()(FunctionalInstruction&) override;
 	void operator()(FunctionCall&) override;
